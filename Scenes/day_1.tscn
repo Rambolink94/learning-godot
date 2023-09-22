@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://bthog2wg1wi6w"]
+[gd_scene load_steps=5 format=3 uid="uid://bthog2wg1wi6w"]
 
 [ext_resource type="Script" path="res://CalorieCounter.cs" id="1_akk8n"]
 [ext_resource type="Texture2D" uid="uid://biqwq1qjg83jd" path="res://icon.svg" id="2_t4cg6"]
 [ext_resource type="Script" path="res://RockPaperScissors.cs" id="3_e4rvl"]
+[ext_resource type="Script" path="res://RucksackReorganization.cs" id="4_be25b"]
 
 [node name="Day_1" type="Node3D"]
 
@@ -15,3 +16,8 @@ script = ExtResource("1_akk8n")
 position = Vector2(242, 88)
 texture = ExtResource("2_t4cg6")
 script = ExtResource("3_e4rvl")
+
+[node name="RucksackReorganization" type="Sprite2D" parent="."]
+position = Vector2(388, 88)
+texture = ExtResource("2_t4cg6")
+script = ExtResource("4_be25b")

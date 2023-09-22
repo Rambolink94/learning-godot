@@ -10,33 +10,28 @@ public partial class CalorieCounter : Node3D
 	public override void _Ready()
 	{
 		var topThreeElves = new int[3];
-		using (var input = FileAccess.Open(InputPath, FileAccess.ModeFlags.Read))
+		int currentCalories = 0;
+		
+		foreach (string line in InputReader.ReadInput(1))
 		{
-			int currentCalories = 0;
-			do
+			if (line != string.Empty)
 			{
-				string line = input.GetLine();
-
-				if (line != string.Empty)
-				{
-					// Accumulate current elf's carried calories
-					currentCalories += int.Parse(line);
-					continue;
-				}
-
-				// If an empty line was found, then we've accumulated all the current elf's calories.
-				for (int i = 0; i < topThreeElves.Length; i++)
-				{
-					if (topThreeElves[i] < currentCalories)
-					{
-						// Swap values to increase current and pass off old value to lower elves.
-						(topThreeElves[i], currentCalories) = (currentCalories, topThreeElves[i]);
-					}
-				}
-					
-				currentCalories = 0;
+				// Accumulate current elf's carried calories
+				currentCalories += int.Parse(line);
+				continue;
 			}
-			while (!input.EofReached());
+
+			// If an empty line was found, then we've accumulated all the current elf's calories.
+			for (int i = 0; i < topThreeElves.Length; i++)
+			{
+				if (topThreeElves[i] < currentCalories)
+				{
+					// Swap values to increase current and pass off old value to lower elves.
+					(topThreeElves[i], currentCalories) = (currentCalories, topThreeElves[i]);
+				}
+			}
+				
+			currentCalories = 0;
 		}
 
 		int totalElfCalories = 0;

@@ -1,6 +1,5 @@
 using System;
 using Godot;
-using Array = System.Array;
 
 namespace LearningGodot;
 
@@ -13,24 +12,18 @@ public partial class RockPaperScissors : Node
 	{
 		int totalScore = 0;
 		int opponentTotalScore = 0;
-		
-		using (var input = FileAccess.Open(InputPath, FileAccess.ModeFlags.Read))
+
+		foreach (string line in InputReader.ReadInput(2))
 		{
-			do
-			{
-				string line = input.GetLine();
+			string[] plays = line.Split(' ');
 
-				string[] plays = line.Split(' ');
+			PlayType opponentPlay = GetPlay(plays[0]);
+			PlayType yourPlay = GetPlayForDesiredOutcome(plays[1], opponentPlay);
 
-				PlayType opponentPlay = GetPlay(plays[0]);
-				PlayType yourPlay = GetPlayForDesiredOutcome(plays[1], opponentPlay);
+			int outcome = CalculateOutcome(opponentPlay, yourPlay);
 
-				int outcome = CalculateOutcome(opponentPlay, yourPlay);
-				
-				opponentTotalScore += (int)opponentPlay + 6 - outcome;
-				totalScore += (int)yourPlay + outcome;
-			}
-			while (!input.EofReached());
+			opponentTotalScore += (int)opponentPlay + 6 - outcome;
+			totalScore += (int)yourPlay + outcome;
 		}
 
 		bool win = totalScore > opponentTotalScore;
