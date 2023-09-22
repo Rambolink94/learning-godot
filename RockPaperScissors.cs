@@ -23,7 +23,7 @@ public partial class RockPaperScissors : Node
 				string[] plays = line.Split(' ');
 
 				PlayType opponentPlay = GetPlay(plays[0]);
-				PlayType yourPlay = GetPlay(plays[1]);
+				PlayType yourPlay = GetPlayForDesiredOutcome(plays[1], opponentPlay);
 
 				int outcome = CalculateOutcome(opponentPlay, yourPlay);
 				
@@ -51,23 +51,35 @@ public partial class RockPaperScissors : Node
 		return 0;
 	}
 
+	private PlayType GetPlayForDesiredOutcome(string outcome, PlayType opponentPlay)
+	{
+		// Default to draw
+		PlayType play = opponentPlay;
+		if (outcome == "X")
+		{
+			// Round must be a loss
+			play = opponentPlay == PlayType.Rock ? PlayType.Scissors : opponentPlay - 1;
+		}
+		else if (outcome == "Z")
+		{
+			// Round must be a win
+			play = opponentPlay == PlayType.Scissors ? PlayType.Rock : opponentPlay + 1;
+		}
+
+		return play;
+	}
+
 	private PlayType GetPlay(string play)
 	{
-		switch (play)
+		return play switch
 		{
-			case "A":
-			case "X":
-				return PlayType.Rock;
-			case "B":
-			case "Y":
-				return PlayType.Paper;
-			case "C":
-			case "Z":
-				return PlayType.Scissors;
-			default:
-				throw new ArgumentException($"Unknown play {play} provided", nameof(play));
-		}
+			"A" => PlayType.Rock,
+			"B" => PlayType.Paper,
+			"C" => PlayType.Scissors,
+			_ => throw new ArgumentException($"Unknown play {play} provided", nameof(play)),
+		};
 	}
+	
 	private enum PlayType
 	{
 		Rock = 1,
