@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 
 namespace LearningGodot;
@@ -10,59 +11,48 @@ public partial class RucksackReorganization : Sprite2D
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
+		int lowerOffset = 96;
+		int upperOffset = 38;
+		
 		int totalRepeats = 0;
-		foreach (string line in InputReader.ReadInput(3))
+		int groupSize = 3;
+
+		int groupCount = 0;
+		while (true)
 		{
-			int rucksackSize = line.Length;
-			int compartmentSize = rucksackSize / 2;
-
-			ReadOnlySpan<char> leftCompartment = line.AsSpan()[..compartmentSize];
-			ReadOnlySpan<char> rightCompartment = line.AsSpan()[compartmentSize..];
-
-			int lowerOffset = 96;
-			int upperOffset = 38;
-
-			char repeatChar = (char)0;
-			bool found = false;
-			for (int i = 0; i < compartmentSize; i++)
+			var group = InputReader.ReadInput(3).Skip(groupCount++ * groupSize).Take(groupSize).ToArray();
+			if (group.Length == 0)
 			{
-				char comparison = leftCompartment[i];
-				for (int j = 0; j < compartmentSize; j++)
-				{
-					if (comparison == rightCompartment[j])
-					{
-						repeatChar = comparison;
-						found = true;
-						break;
-					}
-				}
-
-				if (found)
-				{
-					break;
-				}
+				// Reached end of file
+				break;
 			}
+			
+			var badgeChar = GetBadgeChar(group);
 
-			totalRepeats += char.IsLower(repeatChar) ? repeatChar - lowerOffset : repeatChar - upperOffset;
-
-			// A = 65
-			// a = 97
+			int offset = char.IsLower(badgeChar) ? lowerOffset : upperOffset;
+			totalRepeats += badgeChar - offset;
 		}
 		
 		GD.Print(totalRepeats);
 	}
 
-	private class Rucksack
+	private char GetBadgeChar(string[] group)
 	{
-		// Has two compartments
-		// All items into one of two
-		// One item wrong
-		// Type is letter
-		// A and a not same
-		// Each half of string is compartment
-		
-		// Priority:
-		// Lower => 1 - 26
-		// Upper => 27 - 52
+		for (int i = 0; i < group[0].Length; i++)
+		{
+			for (int j = 0; j < group[1].Length; j++)
+			{
+				for (int k = 0; k < group[2].Length; k++)
+				{
+					if (group[0][i] == group[1][j] && group[1][j] == group[2][k])
+					{
+						return group[0][i];
+					}
+				}
+			}
+		}
+
+		// Found nothing.
+		return (char)0;
 	}
 }
