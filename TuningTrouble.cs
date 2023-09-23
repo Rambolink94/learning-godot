@@ -9,8 +9,9 @@ public partial class TuningTrouble : Node2D
     public override void _Ready()
     {
         int firstMarkerIndex = 0;
+        int offset = 13;
         var data = InputReader.ReadInput(6).First().AsSpan();
-        for (int i = 3; i < data.Length; i++)
+        for (int i = offset; i < data.Length; i++)
         {
             if (FoundUniqueSet(i, data))
             {
@@ -19,21 +20,21 @@ public partial class TuningTrouble : Node2D
             }
         }
 
-        var slice = data.Slice(firstMarkerIndex - 3, 4);
-        GD.Print(slice.ToString());
+        var slice = data.Slice(firstMarkerIndex - offset, offset + 1);
+        GD.Print(firstMarkerIndex + 1);
 
         bool FoundUniqueSet(int i, ReadOnlySpan<char> data)
         {
-            var usedCharacters = new char[3];
+            var usedCharacters = new char[offset];
             int j = i;
-            for (int k = 0; j >= i - 3; j--, k++)
+            for (int k = 0; j >= i - offset; j--, k++)
             {
                 if (usedCharacters.Contains(data[j]))
                 {
                     break;
                 }
 
-                if (j == i - 3)
+                if (j == i - offset)
                 {
                     // Compared all characters and found no duplicates
                     return true;
