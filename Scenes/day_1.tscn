@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bthog2wg1wi6w"]
+[gd_scene load_steps=8 format=3 uid="uid://bthog2wg1wi6w"]
 
 [ext_resource type="Script" path="res://CalorieCounter.cs" id="1_akk8n"]
 [ext_resource type="Texture2D" uid="uid://biqwq1qjg83jd" path="res://icon.svg" id="2_t4cg6"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://RucksackReorganization.cs" id="4_be25b"]
 [ext_resource type="Script" path="res://CampCleanup.cs" id="5_pcmne"]
 [ext_resource type="Script" path="res://SupplyStacks.cs" id="6_85s3w"]
+[ext_resource type="Script" path="res://TuningTrouble.cs" id="7_rp3q0"]
 
 [node name="Day_1" type="Node3D"]
 
@@ -33,3 +34,8 @@ script = ExtResource("5_pcmne")
 position = Vector2(689, 88)
 texture = ExtResource("2_t4cg6")
 script = ExtResource("6_85s3w")
+
+[node name="TuningTrouble" type="Sprite2D" parent="."]
+position = Vector2(842, 88)
+texture = ExtResource("2_t4cg6")
+script = ExtResource("7_rp3q0")
