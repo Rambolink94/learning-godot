@@ -70,9 +70,16 @@ public partial class SupplyStacks : Node2D
             int to = int.Parse(movePositions.Slice(indexOfTo + 2, movePositions.Length - indexOfTo - 2).Trim());
             int amountToMove = int.Parse(span.Slice(4, indexOfFrom - 4));
 
-            for (int i = 0; i < amountToMove; i++)
+            var grabbedBoxes = new List<char>();
+            for (int i = 0; i < amountToMove && stacks[from - 1].Count > 0; i++)
             {
-                stacks[to - 1].Push(stacks[from - 1].Pop());
+                 grabbedBoxes.Add(stacks[from - 1].Pop());
+            }
+
+            for (int i = amountToMove - 1; i >= 0; i--)
+            {
+                // Insert backwards to maintain order
+                stacks[to - 1].Push(grabbedBoxes[i]);
             }
         }
 
