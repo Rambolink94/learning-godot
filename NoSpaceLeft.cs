@@ -14,11 +14,10 @@ public partial class NoSpaceLeft : Node
 		Directory current = root;
 		
 		const string baseDir = "/";
-		int maxSize = 100_000;
-		int runningTotal = 0;
 		
 		bool inListDir = false;
 		int lineNumber = 0;
+		// Build directories based on input
 		foreach (string line in InputReader.ReadInput(7))
 		{
 			++lineNumber;
@@ -42,13 +41,6 @@ public partial class NoSpaceLeft : Node
 					}
 					else if (changeToken == "..")
 					{
-						// Traversed all sub-directories, so safe to get max size
-						int totalSize = current.TotalSize;
-						if (totalSize <= maxSize)
-						{
-							runningTotal += totalSize;
-						}
-						
 						// Back one directory
 						current = current.Parent;
 					}
@@ -83,8 +75,38 @@ public partial class NoSpaceLeft : Node
 				current.AddFile(fileName, size);
 			}
 		}
+
+		const int diskSize = 70_000_000;
+		const int updateSize = 30_000_000;
 		
-		GD.Print(runningTotal);
+		int usedSpace = root.TotalSize;
+		
+		int smallestSize = int.MaxValue;
+		Directory smallestValidDirectory = null;
+		
+		GetSmallestPossibleDirectoryToDelete(root);
+		
+		GD.Print($"Best Directory: {smallestValidDirectory.Name} of size {smallestValidDirectory.TotalSize}");
+
+		void GetSmallestPossibleDirectoryToDelete(Directory currentDir)
+		{
+			int currentSize = currentDir.TotalSize;
+			if (usedSpace - currentSize <= diskSize - updateSize)
+			{
+				// Found a deletion that will allow for update
+				if (currentSize < smallestSize)
+				{
+					// Get the directory that would result in the smallest delete
+					smallestSize = currentSize;
+					smallestValidDirectory = currentDir;
+				}
+			}
+
+			foreach (Directory directory in currentDir.Directories)
+			{
+				GetSmallestPossibleDirectoryToDelete(directory);
+			}
+		}
 	}
 
 	private class Directory
@@ -104,8 +126,20 @@ public partial class NoSpaceLeft : Node
 
 		public int Size => _files.Values.Sum();
 
+		// TODO: Add fileAdded event that parents can subscribe to cache size changes.
 		public int TotalSize => _directories.Values.Sum(directory => directory.TotalSize) + Size;
 
+		public IEnumerable<Directory> Directories
+		{
+			get
+			{
+				foreach (Directory directory in _directories.Values)
+				{
+					yield return directory;
+				}
+			}
+		}
+		
 		public bool AddFile(string fileName, int size)
 		{
 			return _files.TryAdd(fileName, size);
