@@ -2,7 +2,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class CalorieCounter : Node3D
+public partial class CalorieCounter : Node2D
 {
 	private const string InputPath = "res://Input/day_1_input.txt";
 	

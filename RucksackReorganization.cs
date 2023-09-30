@@ -4,7 +4,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class RucksackReorganization : Sprite2D
+public partial class RucksackReorganization : Node2D
 {
 	private const string InputPath = "res://Input/day_2_input.txt";
 	

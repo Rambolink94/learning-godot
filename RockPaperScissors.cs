@@ -3,7 +3,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class RockPaperScissors : Node
+public partial class RockPaperScissors : Node2D
 {
 	private const string InputPath = "res://Input/day_2_input.txt";
 	
