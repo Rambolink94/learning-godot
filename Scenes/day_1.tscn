@@ -78,3 +78,5 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 columns = 7
+
+[connection signal="gui_input" from="Menu" to="Menu" method="_on_gui_input"]

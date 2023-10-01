@@ -6,10 +6,13 @@ namespace LearningGodot;
 
 public partial class TreeHouse : Control
 {
+    private GridContainer _treeGrid = null;
+    private List<Control> _trees = new();
+    
     public override void _Ready()
     {
         var treePackage = GD.Load<PackedScene>("res://Scenes/tree_2d.tscn");
-        var treeGrid = GetNode<GridContainer>("TreeGrid");
+        _treeGrid = GetNode<GridContainer>("TreeGrid");
         
         // Visible if trees in same row or column are shorter
         // Edge trees always visible
@@ -21,7 +24,7 @@ public partial class TreeHouse : Control
             rows.Add(line);
         }
 
-        treeGrid.Columns = rows.Count;
+        _treeGrid.Columns = rows.Count;
         
         int margin = 5;
         
@@ -35,7 +38,8 @@ public partial class TreeHouse : Control
                 var label = tree.GetNode<Label>("Label");
                 label.Text = row[x].ToString();
                 
-                treeGrid.AddChild(tree);
+                _treeGrid.AddChild(tree);
+                _trees.Add(tree);
                 
                 if (IsVisible(x, y, row, rows.Count, row.Length))
                 {
@@ -128,5 +132,73 @@ public partial class TreeHouse : Control
             // Nothing was blocking this tree
             return false;
         }
+    }
+
+    private bool _dragging = false;
+    private float _scaleAmount = 0.05f;
+    private Vector2 _offset = Vector2.Zero;
+    private float _zoomFactor = 1.0f;
+
+    public override void _Input(InputEvent @event)
+    {
+        // Mouse events
+        if (@event is InputEventMouseButton mouseEvent)
+        {
+            if (mouseEvent.ButtonIndex == MouseButton.Middle)
+            {
+                // Panning
+                _offset = Vector2.Zero;
+                _dragging = mouseEvent.Pressed;
+            }
+            else if (mouseEvent.ButtonIndex is MouseButton.WheelUp)
+            {
+                Zoom(mouseEvent.Position, 1 + _scaleAmount);
+            }
+            else if (mouseEvent.ButtonIndex is MouseButton.WheelDown)
+            {
+                Zoom(mouseEvent.Position, 1 - _scaleAmount);
+            }
+        }
+        else if (@event is InputEventMouseMotion motionEvent && _dragging)
+        {
+            if (Mathf.IsZeroApprox(_offset.X) && Mathf.IsZeroApprox(_offset.Y))
+            {
+                // Calculate new offset
+                _offset = new Vector2(
+                    motionEvent.Position.X - _treeGrid.Position.X,
+                    motionEvent.Position.Y - _treeGrid.Position.Y);
+            }
+
+            var position = new Vector2(
+                motionEvent.Position.X - _offset.X,
+                motionEvent.Position.Y - _offset.Y);
+
+            GD.Print(position);
+
+            QueueRedraw();
+            _treeGrid.Position = position;
+        }
+    }
+
+    public override void _Draw()
+    {
+        var font = new SystemFont();
+        DrawString(font, _treeGrid.Position, _treeGrid.Position.ToString());
+    }
+
+    private void Zoom(Vector2 mousePosition, float zoomAmount)
+    {
+        var anchor = new Vector2(
+            (mousePosition.X - _treeGrid.Position.X) / _zoomFactor,
+            (mousePosition.Y - _treeGrid.Position.Y) / _zoomFactor);
+
+        // Update zoom factor
+        _zoomFactor *= zoomAmount;
+        
+        // Move and zoom in relation to mouse position
+        _treeGrid.Scale *= zoomAmount;
+        _treeGrid.Position = new Vector2(
+            mousePosition.X - anchor.X * _zoomFactor,
+            mousePosition.Y - anchor.Y * _zoomFactor);
     }
 }
