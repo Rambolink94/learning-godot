@@ -34,6 +34,8 @@ public partial class TreeHouse : Control
         _treeGrid.Columns = _columnCount;
         
         int visibleCount = 0;
+        int bestScenicScore = int.MinValue;
+        Vector2 bestScorePosition = Vector2.Inf;
         for (int y = 0; y < _rowCount; y++)
         {
             string row = _rows[y];
@@ -56,7 +58,14 @@ public partial class TreeHouse : Control
                 }
 
                 string count = visible ? $"\nCount: {visibleCount}" : string.Empty;
-                tree.TooltipText = $"Position: {x}, {y} \nVisible: {visible} {count}";
+                int scenicScore = blockerInfo.GetScenicScore(_columnCount, _rowCount);
+                if (scenicScore > bestScenicScore)
+                {
+                    bestScenicScore = scenicScore;
+                    bestScorePosition = blockerInfo.Origin;
+                }
+                
+                tree.TooltipText = $"Position: {x}, {y} \nScore: {scenicScore} \nVisible: {visible} {count}";
 
                 var cellData = new CellData
                 {
@@ -69,49 +78,58 @@ public partial class TreeHouse : Control
             }
         }
         
-        // 1809
-        GD.Print("Visible Count: " + visibleCount);
+        GD.Print($"Visible Count: {visibleCount} ScenicScore: {bestScenicScore} at {bestScorePosition}");
     }
 
     private BlockerInfo GetBlockers(int x, int y)
     {
         var value = (int)Char.GetNumericValue(_rows[y][x]);
         
-        var leftBlocker = GetBlockerInRange(0, x - 1, -1, true);
-        var rightBlocker = GetBlockerInRange(x + 1, _columnCount, 1, true);
-        var upBlocker = GetBlockerInRange(0, y - 1, -1, false);
-        var bottomBlocker = GetBlockerInRange(y + 1, _rowCount, 1, false);
+        var leftBlocker = GetBlockerInRange(0, x - 1, -1, Axis.X);
+        var rightBlocker = GetBlockerInRange(x + 1, _columnCount, 1, Axis.X);
+        var upBlocker = GetBlockerInRange(0, y - 1, -1, Axis.Y);
+        var bottomBlocker = GetBlockerInRange(y + 1, _rowCount, 1, Axis.Y);
 
         return new BlockerInfo
         {
+            Origin = new Vector2(x, y),
             Blockers = new [] { leftBlocker, upBlocker, rightBlocker, bottomBlocker },
         };
 
-        Vector2 GetBlockerInRange(int min, int max, int direction, bool xAxis)
+        Blocker GetBlockerInRange(int min, int max, int direction, Axis axis)
         {
+            Vector2 position = Vector2.Inf;
             int i = direction > 0 ? min : max;
             for (; direction > 0 ? i < max : i >= min; i += direction)
             {
-                int comparison = (int)Char.GetNumericValue(xAxis ? _rows[y][i] : _rows[i][x]);
+                int comparison = (int)Char.GetNumericValue(axis == Axis.X ? _rows[y][i] : _rows[i][x]);
                 if (comparison >= value)
                 {
-                    return xAxis ? new Vector2(i, y) : new Vector2(x, i);
+                    position = axis == Axis.X ? new Vector2(i, y) : new Vector2(x, i);
+                    break;
                 }
             }
 
-            return Vector2.Inf;
+            return new Blocker
+            {
+                Position = position,
+                Axis = axis,
+                Direction = direction,
+            };
         }
     }
 
     private struct BlockerInfo
     {
-        public Vector2[] Blockers;
+        public Vector2 Origin;
+        
+        public Blocker[] Blockers;
 
         public readonly bool IsVisible()
         {
-            foreach (Vector2 blocker in Blockers)
+            foreach (Blocker blocker in Blockers)
             {
-                if (blocker == Vector2.Inf)
+                if (blocker.Position == Vector2.Inf)
                 {
                     return true;
                 }
@@ -119,6 +137,58 @@ public partial class TreeHouse : Control
 
             return false;
         }
+
+        public readonly int GetScenicScore(int columnCount, int rowCount)
+        {
+            int total = 1;
+            foreach (Blocker blocker in Blockers)
+            {
+                Vector2 diff = Vector2.Zero;
+                if (!blocker.Position.IsFinite())
+                {
+                    // If direction is negative, then value is 0.
+                    // Else if axis is X axis, use column count otherwise row count.
+                    if (blocker.Axis == Axis.X)
+                    {
+                        int x = blocker.Direction < 0 ? 0 : columnCount - 1;
+                        diff.X = MathF.Abs(Origin.X - x);
+                    }
+                    else
+                    {
+                        int y = blocker.Direction < 0 ? 0 : rowCount - 1;
+                        diff.Y = MathF.Abs(Origin.Y - y);;
+                    }
+                }
+                else
+                {
+                    diff = blocker.Position - Origin;
+                }
+                
+                int diffX = Mathf.Max((int)Mathf.Abs(diff.X), 1);
+                int diffY = Mathf.Max((int)Mathf.Abs(diff.Y), 1);
+
+                int value = diffX * diffY;
+
+                // Multiply the blocker's difference to the total
+                // The difference gives how many trees are between origin and blocker
+                total *= Mathf.Max(value, 1);
+            }
+
+            return total;
+        }
+    }
+
+    private struct Blocker
+    {
+        public Vector2 Position;
+        public int Direction;
+        public Axis Axis;
+    }
+    
+    private enum Axis
+    {
+        X,
+        Y,
     }
 
     private struct CellData
@@ -200,11 +270,11 @@ public partial class TreeHouse : Control
             var rect = cellData.ColorRect.GetRect();
             if (rect.HasPoint((mouseEvent.GlobalPosition - _treeGrid.GlobalPosition) / _treeGrid.Scale))
             {
-                foreach (Vector2 blocker in cellData.BlockerInfo.Blockers)
+                foreach (Blocker blocker in cellData.BlockerInfo.Blockers)
                 {
-                    if (!blocker.IsFinite()) continue;
+                    if (!blocker.Position.IsFinite()) continue;
                     
-                    int i = (int)blocker.Y * _columnCount + (int)blocker.X;
+                    int i = (int)blocker.Position.Y * _columnCount + (int)blocker.Position.X;
                     CellData data = _trees[i];
                     Highlight(data.ColorRect, Colors.BlueViolet, i);
                 }
