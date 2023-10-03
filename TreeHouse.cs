@@ -6,8 +6,14 @@ namespace LearningGodot;
 
 public partial class TreeHouse : Control
 {
+    private readonly List<CellData> _trees = new();
+    private readonly Dictionary<int, Color> _originalColors = new();
+    
     private GridContainer _treeGrid = null;
-    private List<Control> _trees = new();
+    private List<string> _rows = new();
+    
+    private int _rowCount;
+    private int _columnCount;
     
     public override void _Ready()
     {
@@ -16,122 +22,110 @@ public partial class TreeHouse : Control
         
         // Visible if trees in same row or column are shorter
         // Edge trees always visible
-        int lineNumber = 0;
-        var rows = new List<string>();
+        _rows = new List<string>();
         foreach (string line in InputReader.ReadInput(8))
         {
             // Construct grid
-            rows.Add(line);
+            _rows.Add(line);
         }
 
-        _treeGrid.Columns = rows.Count;
-        
-        int margin = 5;
+        _rowCount = _rows.Count;
+        _columnCount = _rows[0].Length;
+        _treeGrid.Columns = _columnCount;
         
         int visibleCount = 0;
-        for (int y = 1; y < rows.Count - 1; y++)
+        for (int y = 0; y < _rowCount; y++)
         {
-            string row = rows[y];
-            for (int x = 1; x < row.Length - 1; x++)
+            string row = _rows[y];
+            for (int x = 0; x < _columnCount; x++)
             {
                 var tree = treePackage.Instantiate<ColorRect>();
                 var label = tree.GetNode<Label>("Label");
                 label.Text = row[x].ToString();
                 
                 _treeGrid.AddChild(tree);
-                _trees.Add(tree);
+
+                BlockerInfo blockerInfo = GetBlockers(x, y);
                 
-                if (IsVisible(x, y, row, rows.Count, row.Length))
+                bool visible = blockerInfo.IsVisible();
+                if (visible)
                 {
-                    tree.Color = Colors.White;
+                    tree.Color = Colors.Red;
+
                     visibleCount++;
                 }
+
+                string count = visible ? $"\nCount: {visibleCount}" : string.Empty;
+                tree.TooltipText = $"Position: {x}, {y} \nVisible: {visible} {count}";
+
+                var cellData = new CellData
+                {
+                    Position = new Vector2(x, y),
+                    BlockerInfo = blockerInfo,
+                    ColorRect = tree,
+                };
+                
+                _trees.Add(cellData);
             }
         }
-
-        // Add outer trees
-        visibleCount += rows.Count * 2 + rows[0].Length * 2 - 2;
         
+        // 1809
         GD.Print("Visible Count: " + visibleCount);
+    }
 
-        bool IsVisible(int x, int y, string row, int rowCount, int columnCount)
+    private BlockerInfo GetBlockers(int x, int y)
+    {
+        var value = (int)Char.GetNumericValue(_rows[y][x]);
+        
+        var leftBlocker = GetBlockerInRange(0, x - 1, -1, true);
+        var rightBlocker = GetBlockerInRange(x + 1, _columnCount, 1, true);
+        var upBlocker = GetBlockerInRange(0, y - 1, -1, false);
+        var bottomBlocker = GetBlockerInRange(y + 1, _rowCount, 1, false);
+
+        return new BlockerInfo
         {
-            int value = (int)Char.GetNumericValue(row[x]);
-            bool visible = true;
-            
-            // TODO: Consolidate these two loops into one.
-            // Process column
-            for (int i = 0; i < rowCount; i++)
-            {
-                int currentValue = (int)Char.GetNumericValue(rows[i][x]);
-                
-                if (i == y || i == rowCount - 1)
-                {
-                    // On same value or outer edge
-                    if (visible)
-                    {
-                        // Nothing blocking top or bottom
-                        return true;
-                    }
-                    
-                    visible = true;
-                    continue;
-                }
+            Blockers = new [] { leftBlocker, upBlocker, rightBlocker, bottomBlocker },
+        };
 
-                if (currentValue >= value)
-                {
-                    // Discovered a blocker
-                    visible = false;
-                    
-                    if (i > y)
-                    {
-                        // Blocker on bottom, so break.
-                        break;
-                    }
-                    
-                    // Blocker on top, so continue from y.
-                    i = y - 1;
-                }
-            }
-                
-            // Process row
-            visible = true;
-            for (int i = 0; i < columnCount; i++)
+        Vector2 GetBlockerInRange(int min, int max, int direction, bool xAxis)
+        {
+            int i = direction > 0 ? min : max;
+            for (; direction > 0 ? i < max : i >= min; i += direction)
             {
-                int currentValue = (int)Char.GetNumericValue(rows[y][i]);
-                
-                if (i == x || i == columnCount - 1)
+                int comparison = (int)Char.GetNumericValue(xAxis ? _rows[y][i] : _rows[i][x]);
+                if (comparison >= value)
                 {
-                    // On same value or outer edge
-                    if (visible)
-                    {
-                        // Nothing blocking left or right
-                        return true;
-                    }
-                    
-                    visible = true;
-                    continue;
-                }
-
-                if (currentValue >= value)
-                {
-                    // Discovered a blocker
-                    visible = false;
-                    
-                    if (i > x)
-                    {
-                        // Blocker on right, so break.
-                        break;
-                    }
-                    
-                    // Blocker on left, so continue from x.
-                    i = x - 1;
+                    return xAxis ? new Vector2(i, y) : new Vector2(x, i);
                 }
             }
 
-            // Nothing was blocking this tree
+            return Vector2.Inf;
+        }
+    }
+
+    private struct BlockerInfo
+    {
+        public Vector2[] Blockers;
+
+        public readonly bool IsVisible()
+        {
+            foreach (Vector2 blocker in Blockers)
+            {
+                if (blocker == Vector2.Inf)
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
+    }
+
+    private struct CellData
+    {
+        public Vector2 Position;
+        public BlockerInfo BlockerInfo;
+        public ColorRect ColorRect;
     }
 
     private bool _dragging = false;
@@ -158,6 +152,10 @@ public partial class TreeHouse : Control
             {
                 Zoom(mouseEvent.Position, 1 - _scaleAmount);
             }
+            else if (mouseEvent.ButtonIndex is MouseButton.Left && mouseEvent.IsPressed())
+            {
+                HighlightCells(mouseEvent);
+            }
         }
         else if (@event is InputEventMouseMotion motionEvent && _dragging)
         {
@@ -173,17 +171,9 @@ public partial class TreeHouse : Control
                 motionEvent.Position.X - _offset.X,
                 motionEvent.Position.Y - _offset.Y);
 
-            GD.Print(position);
-
             QueueRedraw();
             _treeGrid.Position = position;
         }
-    }
-
-    public override void _Draw()
-    {
-        var font = new SystemFont();
-        DrawString(font, _treeGrid.Position, _treeGrid.Position.ToString());
     }
 
     private void Zoom(Vector2 mousePosition, float zoomAmount)
@@ -200,5 +190,44 @@ public partial class TreeHouse : Control
         _treeGrid.Position = new Vector2(
             mousePosition.X - anchor.X * _zoomFactor,
             mousePosition.Y - anchor.Y * _zoomFactor);
+    }
+
+    private void HighlightCells(InputEventMouseButton mouseEvent)
+    {
+        int index = 0;
+        foreach (CellData cellData in _trees)
+        {
+            var rect = cellData.ColorRect.GetRect();
+            if (rect.HasPoint((mouseEvent.GlobalPosition - _treeGrid.GlobalPosition) / _treeGrid.Scale))
+            {
+                foreach (Vector2 blocker in cellData.BlockerInfo.Blockers)
+                {
+                    if (!blocker.IsFinite()) continue;
+                    
+                    int i = (int)blocker.Y * _columnCount + (int)blocker.X;
+                    CellData data = _trees[i];
+                    Highlight(data.ColorRect, Colors.BlueViolet, i);
+                }
+
+                Color color = cellData.BlockerInfo.IsVisible() ? Colors.Gold : Colors.Aqua;
+                // If tree's position is at mouse position
+                Highlight(cellData.ColorRect, color, index);
+            }
+
+            index++;
+        }
+        
+        void Highlight(ColorRect rect, Color color, int i)
+        {
+            if (rect.Color == color)
+            {
+                rect.Color = _originalColors[i];
+            }
+            else
+            {
+                _ = _originalColors.TryAdd(i, rect.Color);
+                rect.Color = color;
+            }
+        }
     }
 }
