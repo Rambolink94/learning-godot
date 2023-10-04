@@ -3,7 +3,7 @@
 [sub_resource type="LabelSettings" id="LabelSettings_h8oyg"]
 font_size = 10
 
-[node name="Tree2D" type="ColorRect"]
+[node name="Cell" type="ColorRect"]
 custom_minimum_size = Vector2(25, 25)
 offset_right = 10.0
 offset_bottom = 10.0

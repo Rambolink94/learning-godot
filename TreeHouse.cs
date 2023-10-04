@@ -17,7 +17,7 @@ public partial class TreeHouse : Control
     
     public override void _Ready()
     {
-        var treePackage = GD.Load<PackedScene>("res://Scenes/tree_2d.tscn");
+        var cellPackage = GD.Load<PackedScene>("res://Scenes/cell.tscn");
         _treeGrid = GetNode<GridContainer>("TreeGrid");
         
         // Visible if trees in same row or column are shorter
@@ -41,7 +41,7 @@ public partial class TreeHouse : Control
             string row = _rows[y];
             for (int x = 0; x < _columnCount; x++)
             {
-                var tree = treePackage.Instantiate<ColorRect>();
+                var tree = cellPackage.Instantiate<ColorRect>();
                 var label = tree.GetNode<Label>("Label");
                 label.Text = row[x].ToString();
                 
