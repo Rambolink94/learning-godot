@@ -85,10 +85,10 @@ public partial class TreeHouse : Control
     {
         var value = (int)Char.GetNumericValue(_rows[y][x]);
         
-        var leftBlocker = GetBlockerInRange(0, x - 1, -1, Axis.X);
-        var rightBlocker = GetBlockerInRange(x + 1, _columnCount, 1, Axis.X);
-        var upBlocker = GetBlockerInRange(0, y - 1, -1, Axis.Y);
-        var bottomBlocker = GetBlockerInRange(y + 1, _rowCount, 1, Axis.Y);
+        var leftBlocker = GetBlockerInRange(0, x - 1, -1, Vector2.Axis.X);
+        var rightBlocker = GetBlockerInRange(x + 1, _columnCount, 1, Vector2.Axis.X);
+        var upBlocker = GetBlockerInRange(0, y - 1, -1, Vector2.Axis.Y);
+        var bottomBlocker = GetBlockerInRange(y + 1, _rowCount, 1, Vector2.Axis.Y);
 
         return new BlockerInfo
         {
@@ -96,16 +96,16 @@ public partial class TreeHouse : Control
             Blockers = new [] { leftBlocker, upBlocker, rightBlocker, bottomBlocker },
         };
 
-        Blocker GetBlockerInRange(int min, int max, int direction, Axis axis)
+        Blocker GetBlockerInRange(int min, int max, int direction, Vector2.Axis axis)
         {
             Vector2 position = Vector2.Inf;
             int i = direction > 0 ? min : max;
             for (; direction > 0 ? i < max : i >= min; i += direction)
             {
-                int comparison = (int)Char.GetNumericValue(axis == Axis.X ? _rows[y][i] : _rows[i][x]);
+                int comparison = (int)Char.GetNumericValue(axis == Vector2.Axis.X ? _rows[y][i] : _rows[i][x]);
                 if (comparison >= value)
                 {
-                    position = axis == Axis.X ? new Vector2(i, y) : new Vector2(x, i);
+                    position = axis == Vector2.Axis.X ? new Vector2(i, y) : new Vector2(x, i);
                     break;
                 }
             }
@@ -148,7 +148,7 @@ public partial class TreeHouse : Control
                 {
                     // If direction is negative, then value is 0.
                     // Else if axis is X axis, use column count otherwise row count.
-                    if (blocker.Axis == Axis.X)
+                    if (blocker.Axis == Vector2.Axis.X)
                     {
                         int x = blocker.Direction < 0 ? 0 : columnCount - 1;
                         diff.X = MathF.Abs(Origin.X - x);
@@ -182,13 +182,7 @@ public partial class TreeHouse : Control
     {
         public Vector2 Position;
         public int Direction;
-        public Axis Axis;
-    }
-    
-    private enum Axis
-    {
-        X,
-        Y,
+        public Vector2.Axis Axis;
     }
 
     private struct CellData
