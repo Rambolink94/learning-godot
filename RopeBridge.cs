@@ -1,309 +1,291 @@
-using Godot;
 using System;
 using System.Collections.Generic;
-using LearningGodot;
+using Godot;
+
+namespace LearningGodot;
 
 public partial class RopeBridge : Control
 {
-	private GridContainer _grid;
-	private Slot[,] _cells;
-	private List<string>.Enumerator _moves;
-	private int _size;
-	private int _multiplier = 2;
+	private const int Length = 10;
+	private Vector2 _offset;
+	private float _scale = 10f;
+	private int _activeVisits = 10;
+	
+	private readonly HashSet<Vector2I> _visitedPositions = new();
+	private readonly Queue<Vector2> _activePositions = new();
+	private readonly Vector2I[] _rope = new Vector2I[Length];
+	private List<(string Direction, int Steps)> _moves;
+	
+	private Camera2D _camera;
 
-	private readonly Rope _head = new(HeadChar, Colors.Gold);
-	private readonly Rope _tail = new(TailChar, Colors.BlueViolet);
-	
-	private const string HeadChar = "H";
-	private const string TailChar = "T";
-	
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		List<string> moves = new();
+		_camera = GetNode<Camera2D>("../Camera2D");
+		_offset = this.Position + this.Size / 2;
+
+		_camera.GlobalPosition = _offset;
+		
+		var moves = new List<(string Direction, int Steps)>();
 		foreach (string line in InputReader.ReadInput(9))
 		{
-			int value = int.Parse(line.Split(' ')[1]);
-			if (value > _size)
-			{
-				// TODO: Calculate max horizontal and vertical movement
-				// Get how big the grid needs to be.
-				_size = value;
-			}
+			var parts = line.Split(' ');
+			string direction = parts[0];
+			int steps = int.Parse(parts[1]);
 			
-			moves.Add(line);
+			moves.Add((direction, steps));
 		}
 
-		_moves = moves.GetEnumerator();
-
-		var cellPackage = GD.Load<PackedScene>("res://Scenes/cell.tscn");
-		_grid = GetNode<GridContainer>("BridgeGrid");
-		
-		// Generate grid
-		var scaledSize = _size * _multiplier;
-		_cells = new Slot[scaledSize, scaledSize];
-		_grid.Columns = scaledSize;
-		int middle = scaledSize / 2;
-		for (int y = 0; y < scaledSize; y++)
-		{
-			for (int x = 0; x < scaledSize; x++)
-			{
-				var cell = cellPackage.Instantiate<ColorRect>();
-				bool isStartingCell = x == middle && y == middle;
-
-				var slot = new Slot(cell, isStartingCell);
-				_cells[x, y] = slot;
-
-				if (isStartingCell)
-				{
-					// Initialize head and tail.
-					slot.UpdateSlot(_head);
-
-					_head.Position = new Vector2(x, y);
-					_tail.Position = new Vector2(x, y);
-				}
-			
-				_grid.AddChild(cell);
-			}
-		}
-
-		return;
-
-		int GetDirectionIncrement(Vector2 currentPos, string direction)
-		{
-			return direction switch
-			{
-				"R" => 1,
-				"L" => -1,
-				"D" => (int)currentPos.X + _size,
-				"U" => (int)currentPos.X + _size * -1,
-				_ => throw new ArgumentException("Direction doesn't exist.", nameof(direction)),
-			};
-		}
+		_moves = moves;
 	}
 
-	double _timePerMove = 0.25f;
-	double _increment = 0;
-
-	private string _direction;
-	private int _steps = 0;
-	private int _currentStep = 0;
+	private bool _playFreely;
+	private bool _playInstantly;
+	private bool _processRemainingSteps;
+	private int _lastStep;
+	private int _currentStep;
+	private int _steps;
+	private string _direction = string.Empty;
+	private bool _initialized;
+	private bool _finished;
+	private int _currentIndex;
+	private List<(string Direction, int Steps)>.Enumerator _enumerator;
 	
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
-		_increment += delta;
-		
-		// Get next move
-		if (_currentStep == _steps && _moves.MoveNext())
+		while (_playInstantly)
 		{
-			var parts = _moves.Current!.Split(' ');
-			_direction = parts[0];
-			_steps = int.Parse(parts[1]);
-			_currentStep = 0;
+			ProcessMovement();
 		}
 		
-		for (; _currentStep < _steps; _currentStep++)
+		if (_currentStep == _lastStep
+		    && !_processRemainingSteps
+		    && !_playFreely
+		    && !_playInstantly
+		    || _finished) return;
+		
+		ProcessMovement();
+
+		MoveCamera((float)delta);
+	}
+
+	private void ProcessMovement()
+	{
+		if (_currentStep == _steps || !_initialized)
 		{
-			if (_increment < _timePerMove)
+			if (!_initialized)
 			{
-				// Has not passed enough time
+				_enumerator = _moves.GetEnumerator();
+				
+				_visitedPositions.Add(_rope[^1]);
+				_activePositions.Enqueue(_rope[^1]);
+			}
+			
+			if (!_enumerator.MoveNext())
+			{
+				_enumerator.Dispose();
+				_finished = true;
+				
+				GD.Print($"Count: {_visitedPositions.Count}");
+				
 				return;
 			}
 
-			_increment = 0;
-			
-			// Move head
-			MoveRope(_head, _direction);
+			(_direction, _steps) = _enumerator.Current;
+			_currentIndex++;
+			_currentStep = 0;
+			_processRemainingSteps = false;
+			_initialized = true;
+		}
 
-			int distance = (int)_head.Position.DistanceTo(_tail.Position);
-			if (distance > 1)
+		_rope[0] = GetPosition(_rope[0], _direction);
+
+		for (int j = 0; j < Length - 1; j++)
+		{
+			// Move only if distance requirement was met
+			if (!(Distance(_rope[j], _rope[j + 1]) > 1.5)) continue;
+
+			// Move tail also
+			Vector2I diff = _rope[j + 1] - _rope[j];
+			_rope[j + 1] -= Clamp(diff);
+
+			if (j + 1 == Length - 1)
 			{
-				// Move tail
-			}
-			
-			UpdateSlots();
-		}
-	}
+				// Last rope knot
+				_visitedPositions.Add(_rope[j + 1]);
+				GD.Print($"Visited: {_rope[j + 1]} {_visitedPositions.Count}");
 
-	private void MoveRope(Rope rope, string direction)
-	{
-		Vector2 position = rope.Position;
-		
-		var oldSlot = GetSlot((int)position.X, (int)position.Y);
-		oldSlot.IsVisited = true;
-		oldSlot.UpdateSlot();
-
-		float x = position.X + direction switch
-		{
-			"R" => 1,
-			"L" => -1,
-			_ => 0
-		};
-			
-		float y = position.Y + direction switch
-		{
-			"U" => 1,
-			"D" => -1,
-			_ => 0
-		};
-
-
-		rope.Position = new Vector2(x, y);
-	}
-	
-	private void UpdateSlots()
-	{
-		var headSlot = GetSlot((int)_head.Position.X, (int)_head.Position.Y);
-		var tailSlot = GetSlot((int)_tail.Position.X, (int)_tail.Position.Y);
-
-		tailSlot.UpdateSlot(_tail);
-		headSlot.UpdateSlot(_head);
-	}
-	
-	private Slot GetSlot(int x, int y)
-	{
-		return _cells[x, y];
-	}
-	
-	private class Rope
-	{
-		public string Symbol { get; }
-	    
-		public Color Color { get; }
-	    
-		public Vector2 Position { get; set; }
-
-		public Rope(string symbol, Color color)
-		{
-			Symbol = symbol;
-			Color = color;
-		}
-	}
-    
-	private class Slot
-	{
-		private readonly ColorRect _rect;
-		private Label _label;
-		
-		public Slot(ColorRect rect, bool isVisited = false)
-		{
-			_rect = rect;
-			IsVisited = isVisited;
-			Text = string.Empty;
-		}
-		
-		public bool IsVisited { get; set; }
-
-		public Color Color
-		{
-			set => _rect.Color = value;
-		}
-
-		public string Text
-		{
-			get
-			{
-				var label = GetLabel();
-
-				return label.Text;
-			}
-
-			set
-			{
-				var label = GetLabel();
+				if (_activePositions.Count > _activeVisits)
+				{
+					_activePositions.Dequeue();
+				}
 				
-				label.Text = value;
+				_activePositions.Enqueue(_rope[j + 1]);
 			}
 		}
 
-		public void UpdateSlot(Rope rope = null)
+		QueueRedraw();
+
+		if (_processRemainingSteps || _playFreely)
 		{
-			Text = rope?.Symbol ?? string.Empty;
-			Color = rope?.Color ?? (IsVisited ? Colors.Ivory : Colors.Black);
+			_currentStep++;
 		}
 
-		private Label GetLabel()
+		_lastStep = _currentStep;
+		
+		return;
+		
+		Vector2I GetPosition(Vector2I currentPos, string direction)
 		{
-			if (_label == null)
+			int x = currentPos.X + direction switch
 			{
-				_label = _rect.GetNode<Label>("Label");
-			}
+				"R" => 1,
+				"L" => -1,
+				_ => 0
+			};
 
-			return _label;
+			int y = currentPos.Y + direction switch
+			{
+				"U" => -1,
+				"D" => 1,
+				_ => 0
+			};
+
+			return new Vector2I(x, y);
+		}
+
+		float Distance(Vector2I a, Vector2I b)
+		{
+			int deltaX = a.X - b.X;
+			int deltaY = a.Y - b.Y;
+
+			return MathF.Sqrt(deltaX * deltaX + deltaY * deltaY);
+		}
+
+		Vector2I Clamp(Vector2I original)
+		{
+			int x = Mathf.Clamp(original.X, -1, 1);
+			int y = Mathf.Clamp(original.Y, -1, 1);
+
+			return new Vector2I(x, y);
 		}
 	}
+
+	private float _followSpeed = 1.0f;
 	
-	private bool _dragging = false;
-	private float _scaleAmount = 0.05f;
-	private Vector2 _offset = Vector2.Zero;
-	private float _zoomFactor = 1.0f;
-	private double _timeIncrement = 0.1D;
+	private void MoveCamera(float delta)
+	{
+		var head = (Vector2)_rope[0] * _scale + _offset;
+		float t = _followSpeed * delta;
+		if (t > 1f || t < 0f)
+		{
+			GD.Print("WE HAVE A PROBLEM!");
+		}
+		Vector2 newPosition = _camera.GlobalPosition.Lerp(head, t);
+
+		_camera.GlobalPosition = newPosition;
+	}
+
+	private bool _processed = true;
 	
 	public override void _Input(InputEvent @event)
-    {
-        // Mouse events
-        if (@event is InputEventMouseButton mouseEvent)
-        {
-            if (mouseEvent.ButtonIndex == MouseButton.Middle)
-            {
-                // Panning
-                _offset = Vector2.Zero;
-                _dragging = mouseEvent.Pressed;
-            }
-            else if (mouseEvent.ButtonIndex is MouseButton.WheelUp)
-            {
-                Zoom(mouseEvent.Position, 1 + _scaleAmount);
-            }
-            else if (mouseEvent.ButtonIndex is MouseButton.WheelDown)
-            {
-                Zoom(mouseEvent.Position, 1 - _scaleAmount);
-            }
-        }
-        else if (@event is InputEventMouseMotion motionEvent && _dragging)
-        {
-            if (Mathf.IsZeroApprox(_offset.X) && Mathf.IsZeroApprox(_offset.Y))
-            {
-                // Calculate new offset
-                _offset = new Vector2(
-                    motionEvent.Position.X - _grid.Position.X,
-                    motionEvent.Position.Y - _grid.Position.Y);
-            }
+	{
+		bool ctrlPressed = @event is InputEventWithModifiers { CtrlPressed: true };
+		
+		if (@event is InputEventKey keyEvent)
+		{
+			if (!_playFreely && keyEvent.KeyLabel == Key.Right)
+			{
+				// Step forward
+				if (keyEvent.IsPressed())
+				{
+					if (ctrlPressed && _processed && keyEvent.IsPressed())
+					{
+						// Do all steps
+						_processRemainingSteps = true;
+						_processed = false;
+					}
+					else if (_processed && keyEvent.IsPressed())
+					{
+						// Do single step
+						_currentStep++;
+						_processed = false;
+					}
+				}
+				
+				if (keyEvent.IsReleased())
+				{
+					_processed = true;
+				}
+			}
+			else if (keyEvent.KeyLabel == Key.Enter && keyEvent.IsPressed())
+			{
+				if (ctrlPressed)
+				{
+					_playInstantly = !_playInstantly;
+				}
+				else
+				{
+					_playFreely = !_playFreely;	
+				}
+			}
+		}
+	}
 
-            var position = new Vector2(
-                motionEvent.Position.X - _offset.X,
-                motionEvent.Position.Y - _offset.Y);
-            
-            _grid.Position = position;
-        }
-        else if (@event is InputEventKey keyEvent)
-        {
-	        if (keyEvent.KeyLabel == Key.Left)
-	        {
-		        _timePerMove += _timeIncrement;
-	        }
-	        else if (keyEvent.KeyLabel == Key.Right)
-	        {
-		        _timePerMove -= _timeIncrement;
-	        }
-	        
-	        _timePerMove = Mathf.Clamp(_timePerMove, 0.01D, 2D);
-        }
-    }
+	private Color _midColor = GetRandomColor();
+	private Color _headColor = GetRandomColor();
+	private Color _tailColor = GetRandomColor();
+	
+	public override void _Draw()
+	{
+		var text = $"Move: {_currentIndex} / {_moves.Count}\n" +
+		           $"Direction: {_direction}\n" +
+		           $"Step: {_currentStep + 1} / {_steps}\n" +
+		           $"Found: {_visitedPositions.Count}\n" +
+		           $"FPS: {Engine.GetFramesPerSecond()}";
 
-    private void Zoom(Vector2 mousePosition, float zoomAmount)
-    {
-        var anchor = new Vector2(
-            (mousePosition.X - _grid.Position.X) / _zoomFactor,
-            (mousePosition.Y - _grid.Position.Y) / _zoomFactor);
-
-        // Update zoom factor
-        _zoomFactor *= zoomAmount;
-        
-        // Move and zoom in relation to mouse position
-        _grid.Scale *= zoomAmount;
-        _grid.Position = new Vector2(
-            mousePosition.X - anchor.X * _zoomFactor,
-            mousePosition.Y - anchor.Y * _zoomFactor);
-    }
+		var font = new SystemFont();
+		var offset = new Vector2(0, 1f);
+		var origin = _camera.GlobalPosition + offset * 100f;
+		
+		DrawMultilineString(font, origin, text);
+		
+		var activeColor = Colors.Gray;
+		
+		// Draw trail
+		int index = 1;
+		foreach (Vector2 activePosition in _activePositions)
+		{
+			activeColor.A = index++ / (float)_activeVisits;
+			
+			var drawPosition = activePosition * _scale + _offset;
+			DrawCircle(drawPosition, _scale / 2, activeColor);
+		}
+		
+		// Draw rope
+		for (int i = _rope.Length - 1; i >= 0; i--)
+		{
+			Color color = _midColor;
+			if (i == 0)
+			{
+				color = _headColor;
+			}
+			else if (i == _rope.Length - 1)
+			{
+				color = _tailColor;
+			}
+			
+			var position = (Vector2)_rope[i] * _scale + _offset;
+			DrawCircle(position, _scale / 2, color);
+		}
+	}
+	
+	private static Color GetRandomColor()
+	{
+		return new Color(
+			GD.Randf(),
+			GD.Randf(),
+			GD.Randf()
+		);
+	}
 }

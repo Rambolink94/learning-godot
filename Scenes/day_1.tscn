@@ -88,3 +88,5 @@ grow_vertical = 2
 theme_override_constants/h_separation = 1
 theme_override_constants/v_separation = 1
 columns = 7
+
+[node name="Camera2D" type="Camera2D" parent="."]
