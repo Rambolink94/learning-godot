@@ -4,6 +4,8 @@ namespace LearningGodot;
 
 public abstract partial class PuzzleNode : Node2D
 {
+    // TODO: Add a toggle hear that disables various visualizations.
+    
     [Signal]
     public delegate void PrintMessageEventHandler(string message);
 

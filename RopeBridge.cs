@@ -21,7 +21,8 @@ public partial class RopeBridge : PuzzleNode
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
 	{
-		_camera = GetNode<Camera2D>("../Camera2D");
+		// TODO: Fix this offset.
+		_camera = GetNode<Camera2D>("/root/Root/Camera2D");
 		_offset = this.Position;
 
 		_camera.GlobalPosition = _offset;
