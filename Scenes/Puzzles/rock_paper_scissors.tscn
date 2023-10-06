@@ -1,0 +1,9 @@
+[gd_scene load_steps=3 format=3 uid="uid://s5h428j1t7ti"]
+
+[ext_resource type="Texture2D" uid="uid://biqwq1qjg83jd" path="res://icon.svg" id="1_ayivn"]
+[ext_resource type="Script" path="res://RockPaperScissors.cs" id="2_r7swd"]
+
+[node name="RockPaperScissors" type="Sprite2D"]
+position = Vector2(242, 88)
+texture = ExtResource("1_ayivn")
+script = ExtResource("2_r7swd")

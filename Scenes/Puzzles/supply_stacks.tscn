@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bw832g4f5f1fu"]
+
+[ext_resource type="Script" path="res://SupplyStacks.cs" id="2_pjfw5"]
+
+[node name="SupplyStacks" type="Sprite2D"]
+script = ExtResource("2_pjfw5")

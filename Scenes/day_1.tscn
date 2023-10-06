@@ -1,92 +1,75 @@
-[gd_scene load_steps=11 format=3 uid="uid://bthog2wg1wi6w"]
+[gd_scene load_steps=2 format=3 uid="uid://bthog2wg1wi6w"]
 
-[ext_resource type="Script" path="res://CalorieCounter.cs" id="1_akk8n"]
-[ext_resource type="Texture2D" uid="uid://biqwq1qjg83jd" path="res://icon.svg" id="2_t4cg6"]
-[ext_resource type="Script" path="res://RockPaperScissors.cs" id="3_e4rvl"]
-[ext_resource type="Script" path="res://RucksackReorganization.cs" id="4_be25b"]
-[ext_resource type="Script" path="res://CampCleanup.cs" id="5_pcmne"]
-[ext_resource type="Script" path="res://SupplyStacks.cs" id="6_85s3w"]
-[ext_resource type="Script" path="res://TuningTrouble.cs" id="7_rp3q0"]
-[ext_resource type="Script" path="res://NoSpaceLeft.cs" id="8_liij4"]
-[ext_resource type="Script" path="res://TreeHouse.cs" id="9_unvyu"]
-[ext_resource type="Script" path="res://RopeBridge.cs" id="10_4kaw0"]
+[ext_resource type="Script" path="res://PuzzleManager.cs" id="10_p3f6e"]
 
-[node name="Day_1" type="Node3D"]
+[node name="Root" type="Node3D"]
 
-[node name="CalorieCounter" type="Sprite2D" parent="."]
-position = Vector2(95, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("1_akk8n")
-
-[node name="RockPaperScissors" type="Sprite2D" parent="."]
-position = Vector2(242, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("3_e4rvl")
-
-[node name="RucksackReorganization" type="Sprite2D" parent="."]
-position = Vector2(388, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("4_be25b")
-
-[node name="CampCleanup" type="Sprite2D" parent="."]
-position = Vector2(535, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("5_pcmne")
-
-[node name="SupplyStacks" type="Sprite2D" parent="."]
-position = Vector2(689, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("6_85s3w")
-
-[node name="TuningTrouble" type="Sprite2D" parent="."]
-position = Vector2(842, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("7_rp3q0")
-
-[node name="NoSpaceLeft" type="Sprite2D" parent="."]
-position = Vector2(999, 88)
-texture = ExtResource("2_t4cg6")
-script = ExtResource("8_liij4")
-
-[node name="TreeHouse" type="Control" parent="."]
-visible = false
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("9_unvyu")
-
-[node name="TreeGrid" type="GridContainer" parent="TreeHouse"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/h_separation = 1
-theme_override_constants/v_separation = 1
-columns = 7
-
-[node name="RopeBridge" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("10_4kaw0")
-
-[node name="BridgeGrid" type="GridContainer" parent="RopeBridge"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/h_separation = 1
-theme_override_constants/v_separation = 1
-columns = 7
+[node name="PuzzleContainer" type="Node2D" parent="."]
 
 [node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="Menu" type="Control" parent="CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("10_p3f6e")
+
+[node name="ButtonContainer" type="GridContainer" parent="CanvasLayer/Menu"]
+layout_mode = 0
+offset_right = 499.0
+offset_bottom = 101.0
+columns = 3
+
+[node name="CalorieButton" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Calorie Counter"
+
+[node name="RockPaperScissors" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Rock Paper Scissors"
+
+[node name="RucksackReorganization" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Rucksack Reorganization"
+
+[node name="CampCleanup" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Camp Cleanup"
+
+[node name="SupplyStacks" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Supply Stacks"
+
+[node name="TuningTrouble" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Tuning Trouble"
+
+[node name="NoSpaceLeft" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "No Space Left"
+
+[node name="TreeHouse" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Tree House"
+
+[node name="RopeBridge" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Rope Bridge"
+
+[node name="Console" type="RichTextLabel" parent="CanvasLayer/Menu"]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -321.0
+offset_right = 374.0
+grow_vertical = 0
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+context_menu_enabled = true

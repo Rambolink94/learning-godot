@@ -4,7 +4,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class TuningTrouble : Node2D
+public partial class TuningTrouble : PuzzleNode
 {
     public override void _Ready()
     {
@@ -21,7 +21,7 @@ public partial class TuningTrouble : Node2D
         }
 
         var slice = data.Slice(firstMarkerIndex - offset, offset + 1);
-        GD.Print(firstMarkerIndex + 1);
+        Print((firstMarkerIndex + 1).ToString());
 
         bool FoundUniqueSet(int i, ReadOnlySpan<char> data)
         {

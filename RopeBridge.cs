@@ -4,7 +4,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class RopeBridge : Control
+public partial class RopeBridge : PuzzleNode
 {
 	private const int Length = 10;
 	private Vector2 _offset;
@@ -22,7 +22,7 @@ public partial class RopeBridge : Control
 	public override void _Ready()
 	{
 		_camera = GetNode<Camera2D>("../Camera2D");
-		_offset = this.Position + this.Size / 2;
+		_offset = this.Position;
 
 		_camera.GlobalPosition = _offset;
 		
@@ -86,7 +86,7 @@ public partial class RopeBridge : Control
 				_enumerator.Dispose();
 				_finished = true;
 				
-				GD.Print($"Count: {_visitedPositions.Count}");
+				Print($"Count: {_visitedPositions.Count}");
 				
 				return;
 			}
@@ -113,7 +113,7 @@ public partial class RopeBridge : Control
 			{
 				// Last rope knot
 				_visitedPositions.Add(_rope[j + 1]);
-				GD.Print($"Visited: {_rope[j + 1]} {_visitedPositions.Count}");
+				Print($"Visited: {_rope[j + 1]} {_visitedPositions.Count}");
 
 				if (_activePositions.Count > _activeVisits)
 				{
@@ -176,12 +176,7 @@ public partial class RopeBridge : Control
 	private void MoveCamera(float delta)
 	{
 		var head = (Vector2)_rope[0] * _scale + _offset;
-		float t = _followSpeed * delta;
-		if (t > 1f || t < 0f)
-		{
-			GD.Print("WE HAVE A PROBLEM!");
-		}
-		Vector2 newPosition = _camera.GlobalPosition.Lerp(head, t);
+		Vector2 newPosition = _camera.GlobalPosition.Lerp(head, _followSpeed * delta);
 
 		_camera.GlobalPosition = newPosition;
 	}

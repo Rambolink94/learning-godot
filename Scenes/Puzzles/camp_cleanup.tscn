@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://jlgc8e6rhtes"]
+
+[ext_resource type="Script" path="res://CampCleanup.cs" id="1_mfvbu"]
+
+[node name="CampCleanup" type="Sprite2D"]
+position = Vector2(535, 88)
+script = ExtResource("1_mfvbu")

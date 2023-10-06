@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://ckp3pq5np22qp"]
+
+[ext_resource type="Script" path="res://RopeBridge.cs" id="2_rvftg"]
+
+[node name="RopeBridge" type="Sprite2D"]
+position = Vector2(999, 88)
+script = ExtResource("2_rvftg")

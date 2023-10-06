@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://gr760jfs66mv"]
+
+[ext_resource type="Script" path="res://TreeHouse.cs" id="1_y6qif"]
+
+[node name="TreeHouse" type="Node2D"]
+script = ExtResource("1_y6qif")

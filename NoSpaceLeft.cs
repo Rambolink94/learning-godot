@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Godot;
 
 namespace LearningGodot;
 
-public partial class NoSpaceLeft : Node2D
+public partial class NoSpaceLeft : PuzzleNode
 {
 	// Called when the node enters the scene tree for the first time.
 	public override void _Ready()
@@ -16,12 +15,10 @@ public partial class NoSpaceLeft : Node2D
 		const string baseDir = "/";
 		
 		bool inListDir = false;
-		int lineNumber = 0;
+		
 		// Build directories based on input
 		foreach (string line in InputReader.ReadInput(7))
 		{
-			++lineNumber;
-			
 			// Split into command parts
 			var commandParts = line.Split(' ');
 			if (commandParts[0] == "$")
@@ -86,7 +83,7 @@ public partial class NoSpaceLeft : Node2D
 		
 		GetSmallestPossibleDirectoryToDelete(root);
 		
-		GD.Print($"Best Directory: {smallestValidDirectory.Name} of size {smallestValidDirectory.TotalSize}");
+		Print($"Best Directory: {smallestValidDirectory.Name} of size {smallestValidDirectory.TotalSize}");
 
 		void GetSmallestPossibleDirectoryToDelete(Directory currentDir)
 		{

@@ -5,7 +5,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class SupplyStacks : Node2D
+public partial class SupplyStacks : PuzzleNode
 {
     public override void _Ready()
     {
@@ -89,6 +89,6 @@ public partial class SupplyStacks : Node2D
             topStacksBuilder.Append(stacks[i].Pop());
         }
         
-        GD.Print(topStacksBuilder.ToString());
+        Print(topStacksBuilder.ToString());
     }
 }

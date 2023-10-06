@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://c7c63vtrwan6u"]
+
+[ext_resource type="Script" path="res://NoSpaceLeft.cs" id="1_la0cg"]
+
+[node name="NoSpaceLeft" type="Sprite2D"]
+position = Vector2(999, 88)
+script = ExtResource("1_la0cg")

@@ -2,7 +2,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class CalorieCounter : Node2D
+public partial class CalorieCounter : PuzzleNode
 {
 	private const string InputPath = "res://Input/day_1_input.txt";
 	
@@ -37,10 +37,12 @@ public partial class CalorieCounter : Node2D
 		int totalElfCalories = 0;
 		for (int i = 0; i < topThreeElves.Length; i++)
 		{
+			Print(topThreeElves[i].ToString());
 			GD.Print(topThreeElves[i]);
 			totalElfCalories += topThreeElves[i];
 		}
 		
+		Print(totalElfCalories.ToString());
 		GD.Print(totalElfCalories);
 	}
 }

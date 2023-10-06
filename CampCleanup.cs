@@ -2,7 +2,7 @@
 
 namespace LearningGodot;
 
-public partial class CampCleanup : Node2D
+public partial class CampCleanup : PuzzleNode
 {
     public override void _Ready()
     {
@@ -27,7 +27,7 @@ public partial class CampCleanup : Node2D
             }
         }
         
-        GD.Print(totalContainments);
+        Print(totalContainments.ToString());
         
         bool DoRangesOverlap(int leftLower, int leftUpper, int rightLower, int rightUpper)
         {

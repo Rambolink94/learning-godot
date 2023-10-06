@@ -1,0 +1,7 @@
+[gd_scene load_steps=2 format=3 uid="uid://d2ttilg40qeor"]
+
+[ext_resource type="Script" path="res://TuningTrouble.cs" id="1_fmuyt"]
+
+[node name="TuningTrouble" type="Sprite2D"]
+position = Vector2(842, 88)
+script = ExtResource("1_fmuyt")

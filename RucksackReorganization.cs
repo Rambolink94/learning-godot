@@ -4,7 +4,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class RucksackReorganization : Node2D
+public partial class RucksackReorganization : PuzzleNode
 {
 	private const string InputPath = "res://Input/day_2_input.txt";
 	
@@ -33,7 +33,7 @@ public partial class RucksackReorganization : Node2D
 			totalRepeats += badgeChar - offset;
 		}
 		
-		GD.Print(totalRepeats);
+		Print($"Repeats: {totalRepeats}");
 	}
 
 	private char GetBadgeChar(string[] group)

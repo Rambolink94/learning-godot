@@ -3,7 +3,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class RockPaperScissors : Node2D
+public partial class RockPaperScissors : PuzzleNode
 {
 	private const string InputPath = "res://Input/day_2_input.txt";
 	
@@ -27,6 +27,8 @@ public partial class RockPaperScissors : Node2D
 		}
 
 		bool win = totalScore > opponentTotalScore;
+		string winString = win ? "Won" : "Lost";
+		Print($"You {winString}");
 	}
 
 	private int CalculateOutcome(PlayType opponentPlay, PlayType yourPlay)

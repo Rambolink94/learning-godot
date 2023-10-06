@@ -4,7 +4,7 @@ using Godot;
 
 namespace LearningGodot;
 
-public partial class TreeHouse : Control
+public partial class TreeHouse : PuzzleNode
 {
     private readonly List<CellData> _trees = new();
     private readonly Dictionary<int, Color> _originalColors = new();
@@ -17,8 +17,14 @@ public partial class TreeHouse : Control
     
     public override void _Ready()
     {
+        var treeRootPackage = GD.Load<PackedScene>("res://Scenes/root_tree_control.tscn");
         var cellPackage = GD.Load<PackedScene>("res://Scenes/cell.tscn");
-        _treeGrid = GetNode<GridContainer>("TreeGrid");
+
+        var treeRoot = treeRootPackage.Instantiate<Control>();
+        _treeGrid = treeRoot.GetNode<GridContainer>("TreeGrid");
+        var root = GetNode("/root/Root");
+        
+        root.AddChild(treeRoot);
         
         // Visible if trees in same row or column are shorter
         // Edge trees always visible
@@ -258,6 +264,7 @@ public partial class TreeHouse : Control
 
     private void HighlightCells(InputEventMouseButton mouseEvent)
     {
+        // TODO: Fix highlight positions after refactor.
         int index = 0;
         foreach (CellData cellData in _trees)
         {
