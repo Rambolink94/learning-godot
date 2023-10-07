@@ -61,6 +61,10 @@ text = "Tree House"
 layout_mode = 2
 text = "Rope Bridge"
 
+[node name="CathodeRayTube" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Cathode Ray Tube"
+
 [node name="Console" type="RichTextLabel" parent="CanvasLayer/Menu"]
 layout_mode = 1
 anchors_preset = 2

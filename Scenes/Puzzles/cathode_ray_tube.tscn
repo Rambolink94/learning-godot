@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8ctd3p1r2bgk"]
+
+[ext_resource type="Script" path="res://CathodeRayTube.cs" id="1_1qkfe"]
+
+[node name="CathodRayTube" type="Node2D"]
+script = ExtResource("1_1qkfe")
