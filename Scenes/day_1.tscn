@@ -1,5 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://bthog2wg1wi6w"]
+[gd_scene load_steps=3 format=3 uid="uid://bthog2wg1wi6w"]
 
+[ext_resource type="SystemFont" uid="uid://yupwrhchjef3" path="res://Fonts/courier.tres" id="2_af6fy"]
 [ext_resource type="Script" path="res://PuzzleManager.cs" id="10_p3f6e"]
 
 [node name="Root" type="Node3D"]
@@ -71,9 +72,10 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_top = -321.0
-offset_right = 374.0
+offset_right = 580.0
 grow_vertical = 0
 size_flags_vertical = 3
+theme_override_fonts/normal_font = ExtResource("2_af6fy")
 bbcode_enabled = true
 scroll_following = true
 context_menu_enabled = true

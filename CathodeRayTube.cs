@@ -1,19 +1,20 @@
 ﻿using System.Collections.Generic;
-using Godot;
+using System.Text;
 
 namespace LearningGodot;
 
 public partial class CathodeRayTube : PuzzleNode
 {
     private int _register = 1;
-    private int _signalMarker = 20;
-    private int _signalIncrement = 40;
     private int _clockTick;
     private int _signalStrength;
 
     private int _screenWidth = 40;
     private int _screenPosition;
-    private List<string> _lines = new();
+    private List<string> _crtLines = new();
+
+    private const char Period = '.';
+    private const char Hash = '#';
     
     public override void _Ready()
     {
@@ -21,6 +22,7 @@ public partial class CathodeRayTube : PuzzleNode
         // Clock ticker
         // Signal Strength = cycle # * register
 
+        char[] buffer = new char[_screenWidth];
         foreach (string line in InputReader.ReadInput(10))
         {
             int remainingTicks = 1;
@@ -43,16 +45,37 @@ public partial class CathodeRayTube : PuzzleNode
                 _clockTick++;
                 processedTicks++;
 
-                if (_clockTick == _signalMarker)
+                var character = Period;
+                if (_screenPosition == _register - 1 ||
+                    _screenPosition == _register ||
+                    _screenPosition == _register + 1)
                 {
-                    _signalStrength += _clockTick * _register;
-                    _signalMarker += _signalIncrement;
+                    character = Hash;
+                }
+
+                buffer[_screenPosition++] = character;
+
+                if (_screenPosition == _screenWidth)
+                {
+                    _crtLines.Add(new string(buffer));
+                    buffer = new char[_screenWidth];
+
+                    _screenPosition = 0;
                 }
             }
 
             _register += parsedValue;
         }
+
+        StringBuilder builder = new();
+        builder.AppendLine();
+        foreach (var line in _crtLines)
+        {
+            builder.AppendLine(line);
+        }
         
-        Print($"Signal Strength: {_signalStrength}");
+        Print(builder.ToString());
+
+        return;
     }
 }
