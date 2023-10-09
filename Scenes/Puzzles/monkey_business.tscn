@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://bds6ndtxu5gfb"]
+
+[ext_resource type="Script" path="res://MonkeyBusiness.cs" id="1_jhpf6"]
+
+[node name="MonkeyBusiness" type="Node2D"]
+script = ExtResource("1_jhpf6")

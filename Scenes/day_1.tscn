@@ -66,6 +66,10 @@ text = "Rope Bridge"
 layout_mode = 2
 text = "Cathode Ray Tube"
 
+[node name="MonkeyBusiness" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Monkey Business"
+
 [node name="Console" type="RichTextLabel" parent="CanvasLayer/Menu"]
 layout_mode = 1
 anchors_preset = 2
