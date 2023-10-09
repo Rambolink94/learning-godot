@@ -70,6 +70,10 @@ text = "Cathode Ray Tube"
 layout_mode = 2
 text = "Monkey Business"
 
+[node name="HillClimbing" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+layout_mode = 2
+text = "Hill Climbing"
+
 [node name="Console" type="RichTextLabel" parent="CanvasLayer/Menu"]
 layout_mode = 1
 anchors_preset = 2
