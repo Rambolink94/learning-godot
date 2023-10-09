@@ -6,8 +6,8 @@ namespace LearningGodot;
 
 public partial class HillClimbing : PuzzleNode
 {
-    private List<char[]> _grid = new();
-    private List<Vector2> _startingPoints = new();
+    private readonly List<char[]> _grid = new();
+    private readonly List<Vector2> _startingPoints = new();
     private Vector2 _highestPosition = Vector2.Zero;
     
     public override void _Ready()
