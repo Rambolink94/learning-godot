@@ -6,42 +6,78 @@ namespace LearningGodot;
 
 public partial class HillClimbing : PuzzleNode
 {
+    private List<char[]> _grid = new();
+    private List<Vector2> _startingPoints = new();
+    private Vector2 _highestPosition = Vector2.Zero;
+    
     public override void _Ready()
     {
-        List<char[]> grid = new();
         int lineNumber = 0;
-        Vector2 playerPosition = Vector2.Zero;
-        Vector2 highestPosition = Vector2.Zero;
         
         // Setup grid.
         foreach (string line in InputReader.ReadInput(12))
         {
-            grid.Add(line.ToCharArray());
+            _grid.Add(line.ToCharArray());
             
-            var startIndex = line.IndexOf('S');
-            if (startIndex != -1)
+            for (int i = 0; i < line.Length; i++)
             {
-                // Setup player's starting position.
-                playerPosition = new Vector2(startIndex, lineNumber);
-                grid[lineNumber][startIndex] = 'a';
-            }
+                if (_grid[lineNumber][i] == 'S')
+                {
+                    // Convert starting 'S' to an 'a'
+                    _grid[lineNumber][i] = 'a';
+                }
+                else if (_grid[lineNumber][i] == 'E')
+                {
+                    // Setup the end location, aka highest position.
+                    _highestPosition = new Vector2(i, lineNumber);
+                    _grid[lineNumber][i] = 'z';
+                }
 
-            var endIndex = line.IndexOf('E');
-            if (endIndex != -1)
-            {
-                // Setup the end location, aka highest position.
-                highestPosition = new Vector2(endIndex, lineNumber);
-                grid[lineNumber][endIndex] = 'z';
+                if (_grid[lineNumber][i] == 'a')
+                {
+                    // Add all low points to starting points.
+                    _startingPoints.Add(new Vector2(i, lineNumber));
+                }
             }
 
             lineNumber++;
         }
+    }
 
-        DijkstraAlgorithm(playerPosition);
+    private bool _statusReported;
+    private int _index;
+    private int _shortestRoute = int.MaxValue;
+    private Vector2 _shortestStartingPoint = Vector2.Zero;
+    
+    public override void _Process(double delta)
+    {
+        if (_index < _startingPoints.Count)
+        {
+            int steps = DijkstraAlgorithm(_startingPoints[_index]);
+
+            string stepsString = string.Empty;
+            if (steps < _shortestRoute)
+            {
+                _shortestRoute = steps;
+                _shortestStartingPoint = _startingPoints[_index];
+
+                stepsString = $" with fewer steps of {_shortestRoute}";
+            }
+            
+            Print($"Processed {_startingPoints[_index]}{stepsString} :: ({_index + 1} / {_startingPoints.Count})");
+
+            _index++;
+        }
+
+        if (_index < _startingPoints.Count || _statusReported) return;
         
+        Print($"Shortest path is {_shortestStartingPoint} with {_shortestRoute} steps");
+
+        _statusReported = true;
+
         return;
 
-        void DijkstraAlgorithm(Vector2 currentPosition)
+        int DijkstraAlgorithm(Vector2 currentPosition)
         {
             var weights = new Dictionary<Vector2, int>();
             var queue = new PriorityQueue<Vector2, int>();
@@ -49,9 +85,9 @@ public partial class HillClimbing : PuzzleNode
             queue.Enqueue(currentPosition, 0);
 
             // Initialize weights.
-            for (int y = 0; y < grid.Count; y++)
+            for (int y = 0; y < _grid.Count; y++)
             {
-                for (int x = 0; x < grid[y].Length; x++)
+                for (int x = 0; x < _grid[y].Length; x++)
                 {
                     var position = new Vector2(x, y);
                     weights.Add(position, position == currentPosition ? 0 : Int32.MaxValue);
@@ -62,7 +98,7 @@ public partial class HillClimbing : PuzzleNode
             {
                 Vector2 position = queue.Dequeue();
 
-                if (position == highestPosition)
+                if (position == _highestPosition)
                 {
                     // Found the destination
                     break;
@@ -80,7 +116,7 @@ public partial class HillClimbing : PuzzleNode
                 }
             }
 
-            Print($"Fewest steps: {weights[highestPosition]}");
+            return weights[_highestPosition];
         }
 
         List<Vector2> GetNeighbours(Vector2 currentPosition)
@@ -90,7 +126,7 @@ public partial class HillClimbing : PuzzleNode
             int x = (int)currentPosition.X;
             int y = (int)currentPosition.Y;
 
-            int currentHeight = grid[y][x];
+            int currentHeight = _grid[y][x];
 
             VerifyAndAdd(x - 1, y); // Left
             VerifyAndAdd(x, y + 1); // Top
@@ -103,7 +139,7 @@ public partial class HillClimbing : PuzzleNode
             {
                 try
                 {
-                    var height = grid[innerY][innerX];
+                    var height = _grid[innerY][innerX];
                     if (currentHeight + 1 == height || currentHeight >= height)
                     {
                         // If height is either one more than current or less than current

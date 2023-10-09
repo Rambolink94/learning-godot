@@ -20,68 +20,76 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("10_p3f6e")
 
-[node name="ButtonContainer" type="GridContainer" parent="CanvasLayer/Menu"]
-layout_mode = 0
-offset_right = 499.0
-offset_bottom = 101.0
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Menu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ButtonContainer" type="GridContainer" parent="CanvasLayer/Menu/VBoxContainer"]
+layout_mode = 2
 columns = 3
 
-[node name="CalorieButton" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="CalorieButton" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Calorie Counter"
 
-[node name="RockPaperScissors" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="RockPaperScissors" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Rock Paper Scissors"
 
-[node name="RucksackReorganization" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="RucksackReorganization" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Rucksack Reorganization"
 
-[node name="CampCleanup" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="CampCleanup" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Camp Cleanup"
 
-[node name="SupplyStacks" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="SupplyStacks" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Supply Stacks"
 
-[node name="TuningTrouble" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="TuningTrouble" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Tuning Trouble"
 
-[node name="NoSpaceLeft" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="NoSpaceLeft" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "No Space Left"
 
-[node name="TreeHouse" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="TreeHouse" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Tree House"
 
-[node name="RopeBridge" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="RopeBridge" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Rope Bridge"
 
-[node name="CathodeRayTube" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="CathodeRayTube" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Cathode Ray Tube"
 
-[node name="MonkeyBusiness" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="MonkeyBusiness" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Monkey Business"
 
-[node name="HillClimbing" type="Button" parent="CanvasLayer/Menu/ButtonContainer"]
+[node name="HillClimbing" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
 layout_mode = 2
 text = "Hill Climbing"
 
-[node name="Console" type="RichTextLabel" parent="CanvasLayer/Menu"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -321.0
-offset_right = 580.0
-grow_vertical = 0
+[node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Menu/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 10
+
+[node name="Console" type="RichTextLabel" parent="CanvasLayer/Menu/VBoxContainer/MarginContainer"]
+layout_mode = 2
 size_flags_vertical = 3
 theme_override_fonts/normal_font = ExtResource("2_af6fy")
 bbcode_enabled = true

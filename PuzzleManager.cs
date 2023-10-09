@@ -12,8 +12,8 @@ public partial class PuzzleManager : Control
 	public override void _Ready()
 	{
 		var puzzleContainer = GetNode<Node2D>("../../PuzzleContainer");
-		var buttonContainer = GetNode<Control>("ButtonContainer");
-		var console = GetNode<RichTextLabel>("Console");
+		var buttonContainer = GetNode<Control>("VBoxContainer/ButtonContainer");
+		var console = GetNode<RichTextLabel>("VBoxContainer/MarginContainer/Console");
 		
 		var puzzles = buttonContainer.GetChildren();
 		
