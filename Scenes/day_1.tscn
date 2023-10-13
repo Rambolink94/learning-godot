@@ -80,6 +80,10 @@ text = "Monkey Business"
 layout_mode = 2
 text = "Hill Climbing"
 
+[node name="DistressSignal" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Distress Signal"
+
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Menu/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3

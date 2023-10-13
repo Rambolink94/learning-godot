@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ba6afaci2w6f8"]
+
+[ext_resource type="Script" path="res://DistressSignal.cs" id="1_pfkcv"]
+
+[node name="DistressSignal" type="Node2D"]
+script = ExtResource("1_pfkcv")
