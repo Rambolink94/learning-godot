@@ -14,26 +14,25 @@ public partial class RegolithReservoir : PuzzleNode
     private TileMap _tileMap;
     
     private char[,] _grid;
-    private Vector2 _sandSpawnPoint = new(500, 0);
-    private Vector2 _sandPosition;
+    private Vector2I _sandSpawnPoint;
+    private Vector2I _sandPosition;
     private int _lowestX = int.MaxValue;
     private int _width;
     private int _height;
+    private int _xOffset;
     
     public override void _Ready()
     {
-        _previousPosition = _sandSpawnPoint;
-        _sandPosition = _sandSpawnPoint;
         _tileMap = GetNode<TileMap>("TileMap");
         
         int highestX = 0;
         int highestY = 0;
         _lowestX = int.MaxValue;
         
-        var segmentPoints = new List<List<Vector2>>();
+        var segmentPoints = new List<List<Vector2I>>();
         foreach (string line in InputReader.ReadInput(14))
         {
-            var currentSegmentPoints = new List<Vector2>();
+            var currentSegmentPoints = new List<Vector2I>();
             var points = line.Split("->");
             foreach (string point in points)
             {
@@ -42,7 +41,7 @@ public partial class RegolithReservoir : PuzzleNode
                 var x = int.Parse(parts[0]);
                 var y = int.Parse(parts[1]);
                 
-                currentSegmentPoints.Add(new Vector2(x, y));
+                currentSegmentPoints.Add(new Vector2I(x, y));
                 if (x > highestX)
                 {
                     highestX = x;
@@ -61,8 +60,12 @@ public partial class RegolithReservoir : PuzzleNode
             segmentPoints.Add(currentSegmentPoints);
         }
 
-        _width = highestX - _lowestX + 1;
-        _height = highestY + 1;  // 0 is always lowest Y
+        _sandSpawnPoint = new Vector2I(500 - _lowestX, 0);
+        _sandPosition = _sandSpawnPoint;
+
+        _height = highestY + 3;  // 0 is always lowest Y
+        _xOffset = _height * 2;
+        _width = highestX - _lowestX + 1 + _xOffset;
 
         // Construct environment
         _grid = new char[_width, _height];
@@ -72,9 +75,8 @@ public partial class RegolithReservoir : PuzzleNode
         {
             for (int x = 0; x < _width; x++)
             {
-                if (x == (int)_sandSpawnPoint.X - _lowestX && y == (int)_sandSpawnPoint.Y)
+                if (x == _sandSpawnPoint.X + _xOffset / 2 && y == _sandSpawnPoint.Y)
                 {
-                    _grid[x, y] = Plus;
                     SetTile(new Vector2I(x, y), Plus);
                     continue;
                 }
@@ -89,31 +91,34 @@ public partial class RegolithReservoir : PuzzleNode
             var currentSegmentPoints = segmentPoints[i];
             for (int j = 0; j < currentSegmentPoints.Count - 1; j++)
             {
-                Vector2 point1 = currentSegmentPoints[j];
-                Vector2 point2 = currentSegmentPoints[j + 1];
+                Vector2I point1 = currentSegmentPoints[j];
+                Vector2I point2 = currentSegmentPoints[j + 1];
 
-                int minY = (int)Math.Min(point1.Y, point2.Y);
-                int maxY = (int)Math.Max(point1.Y, point2.Y);
-                int minX = (int)Math.Min(point1.X, point2.X);
-                int maxX = (int)Math.Max(point1.X, point2.X);
+                int minY = Math.Min(point1.Y, point2.Y);
+                int maxY = Math.Max(point1.Y, point2.Y);
+                int minX = Math.Min(point1.X, point2.X);
+                int maxX = Math.Max(point1.X, point2.X);
 
                 for (int y = minY; y <= maxY; y++)
                 {
                     for (int x = minX; x <= maxX; x++)
                     {
-                        _grid[x - _lowestX, y] = Rock;
-                        SetTile(new Vector2I(x - _lowestX, y), Rock);
+                        SetTile(new Vector2I(x - _lowestX + _xOffset / 2, y), Rock);
                     }
                 }
             }
         }
+        
+        // Draw floor
+        for (int x = 0; x < _width; x++)
+        {
+            SetTile(new Vector2I(x, _height - 1), Rock);
+        }
     }
     
-    private int _totalSandParticles;
     private bool _finished;
-
-    private Vector2 _previousPosition;
-    private bool _ignoreErase;
+    private Stack<Vector2I> _path = new();
+    private HashSet<Vector2I> _particles = new();
     
     public override void _Process(double delta)
     {
@@ -122,17 +127,24 @@ public partial class RegolithReservoir : PuzzleNode
         // Simulate sand falling
         try
         {
-            int x = (int)_sandPosition.X - _lowestX;
-            int y = (int)_sandPosition.Y;
+            int x = _sandPosition.X + _xOffset / 2;
+            int y = _sandPosition.Y;
         
             char currentPointSymbol = _grid[x, y];
             if (currentPointSymbol is Rock or Sand)
             {
+                if (x == _sandSpawnPoint.X + _xOffset / 2 && y == _sandSpawnPoint.Y)
+                {
+                    // This allows us to escape out the try.
+                    // Perhaps isn't the best way to do it...but it does work.
+                    throw new IndexOutOfRangeException();
+                }
+                
                 // Check bottom-left
                 char bottomLeftPointSymbol = _grid[x - 1, y];
                 if (bottomLeftPointSymbol is Air)
                 {
-                    SetPosition(new Vector2((int)_sandPosition.X - 1, y));
+                    _sandPosition = new Vector2I(_sandPosition.X - 1, y);
                     return;
                 }
 
@@ -140,50 +152,32 @@ public partial class RegolithReservoir : PuzzleNode
                 char bottomRightPointSymbol = _grid[x + 1, y];
                 if (bottomRightPointSymbol is Air)
                 {
-                    SetPosition(new Vector2((int)_sandPosition.X + 1, y));
+                    _sandPosition = new Vector2I(_sandPosition.X + 1, y);
                     return;
                 }
             
                 // Can rest
-                _grid[x, y - 1] = Sand;
-                SetPosition(_sandSpawnPoint);
-                SetTile(new Vector2I(x, y - 1), Sand);
-                _totalSandParticles++;
+                if (!_path.TryPop(out _sandPosition))
+                {
+                    _sandPosition = _sandSpawnPoint;
+                }
+
+                var pos = new Vector2I(x, y - 1);
+                SetTile(pos, Sand);
+                _particles.Add(pos);
                 
                 return;
             }
             
-            SetPosition(new Vector2(_sandPosition.X, y + 1));
+            _sandPosition = new Vector2I(_sandPosition.X, y + 1);
+            _path.Push(_sandPosition);
+            
             return;
         }
         catch (IndexOutOfRangeException) { }    // If we try and access an invalid index, we've reached the void
 
         _finished = true;
-        Print($"Total Sand Particles: {_totalSandParticles}");
-        
-        return;
-
-        void SetPosition(Vector2 newPosition)
-        {
-            _previousPosition = _sandPosition;
-            _sandPosition = newPosition;
-        }
-
-        void PrintGrid()
-        {
-            for (int y = 0; y < _height; y++)
-            {
-                string line = string.Empty;
-                for (int x = 0; x < _width; x++)
-                {
-                    line += _grid[x, y];
-                }
-                
-                Print(line);
-            }
-            
-            Print(string.Empty);
-        }
+        Print($"Total Sand Particles: {_particles.Count}");
     }
 
     private void SetTile(Vector2I position, char symbol)
@@ -203,6 +197,23 @@ public partial class RegolithReservoir : PuzzleNode
             return;
         }
 
+        _grid[position.X, position.Y] = symbol;
         _tileMap.SetCell(0, position, 1, new Vector2I(x, 0));
+    }
+    
+    private void PrintGrid()
+    {
+        for (int y = 0; y < _height; y++)
+        {
+            string line = string.Empty;
+            for (int x = 0; x < _width; x++)
+            {
+                line += _grid[x, y];
+            }
+                
+            Print(line);
+        }
+            
+        Print(string.Empty);
     }
 }
