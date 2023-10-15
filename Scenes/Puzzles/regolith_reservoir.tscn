@@ -1,0 +1,11 @@
+[gd_scene load_steps=3 format=3 uid="uid://c2g702g5s15ku"]
+
+[ext_resource type="Script" path="res://RegolithReservoir.cs" id="1_u6olc"]
+[ext_resource type="TileSet" uid="uid://bgw18s22ycxuj" path="res://sand_sim_tiles.tres" id="2_nilxg"]
+
+[node name="RegolithReservoir" type="Node2D"]
+script = ExtResource("1_u6olc")
+
+[node name="TileMap" type="TileMap" parent="."]
+tile_set = ExtResource("2_nilxg")
+format = 2
