@@ -12,7 +12,12 @@ public static class InputReader
         {
             do
             {
-                yield return input.GetLine();
+                string line = input.GetLine();
+                if (!line.StartsWith("//"))
+                {
+                    // If line doesn't start with '//', then yield it.
+                    yield return line;
+                }
             }
             while (!input.EofReached());
         }

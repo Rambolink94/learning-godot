@@ -91,6 +91,10 @@ text = "Distress Signal"
 layout_mode = 2
 text = "Regolith Reservoir"
 
+[node name="BeaconExclusionZone" type="Button" parent="CanvasLayer/Menu/VBoxContainer/ButtonContainer"]
+layout_mode = 2
+text = "Beacon Exclusion Zone"
+
 [node name="MarginContainer" type="MarginContainer" parent="CanvasLayer/Menu/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
